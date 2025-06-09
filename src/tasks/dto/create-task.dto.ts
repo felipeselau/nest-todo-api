@@ -10,5 +10,5 @@ export class CreateTaskDto implements Prisma.TaskCreateInput {
   description?: string;
 
   @IsBoolean({message: "O status da tarefa deve ser um booleano."})
-  isDone: boolean;
+  completed: boolean;
 }
