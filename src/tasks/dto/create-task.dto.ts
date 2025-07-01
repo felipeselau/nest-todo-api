@@ -1,14 +1,14 @@
-import { Prisma } from "@prisma/client";
-import { IsBoolean, IsNotEmpty, IsString } from "class-validator";
+import {
+  IsBoolean,
+  IsOptional,
+  IsString,
+  MaxLength,
+  IsUrl,
+} from 'class-validator';
 
-export class CreateTaskDto implements Prisma.TaskCreateInput {
-  @IsString({message: "O título da tarefa deve ser uma string."})
-  @IsNotEmpty({message: "O título não pode ser vazio."})
-  title: string;
-
-  @IsString({message: "A descrição da tarefa deve ser uma string."})
-  description?: string;
-
-  @IsBoolean({message: "O status da tarefa deve ser um booleano."})
-  completed: boolean;
+export class CreateTaskDto {
+  @IsString() @MaxLength(120) title: string;
+  @IsOptional() @IsString() description?: string;
+  @IsOptional() @IsBoolean() completed?: boolean;
+  @IsOptional() @IsUrl() imageUrl?: string; // preenchido no controller
 }
