@@ -1,14 +1,11 @@
-import {
-  IsBoolean,
-  IsOptional,
-  IsString,
-  MaxLength,
-  IsUrl,
-} from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateTaskDto {
   @IsString() @MaxLength(120) title: string;
   @IsOptional() @IsString() description?: string;
-  @IsOptional() @IsBoolean() completed?: boolean;
-  @IsOptional() @IsUrl() imageUrl?: string; // preenchido no controller
+  @Transform(({ value }) => value === 'true') // <- transforma string em boolean
+  @IsBoolean()
+  completed: boolean;
+  @IsOptional() @IsString() imageUrl?: string; // preenchido no controller
 }

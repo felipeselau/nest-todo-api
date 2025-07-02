@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -28,29 +29,32 @@ import * as sharp from 'sharp';
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
-  @Post()
+  @Post('upload')
   @UseInterceptors(
-    FileInterceptor('image', {
+    FileInterceptor('file', {
       storage: taskImageStorage,
-      limits: { fileSize: 5 * 1024 * 1024 },
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
       fileFilter: (_req, file, cb) => {
         cb(null, file.mimetype.startsWith('image/'));
       },
     }),
   )
-  async create(
-    @Body() dto: CreateTaskDto,
-    @UploadedFile() file: Express.Multer.File,
-    @Req() req,
-  ) {
-    if (file) {
-      // opcional: otimizar (ex.: 1024px largura máx)
-      await sharp(file.path)
-        .resize(1024)
-        .toBuffer()
-        .then((buf) => sharp(buf).toFile(file.path));
-      dto.imageUrl = `/static/tasks/${file.filename}`;
+  async uploadImage(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Nenhuma imagem enviada.');
     }
+
+    // Otimização da imagem com sharp (ex: limitar largura)
+    await sharp(file.path)
+      .resize({ width: 1024 })
+      .toBuffer()
+      .then((buffer) => sharp(buffer).toFile(file.path));
+
+    return { imageUrl: `/static/tasks/${file.filename}` };
+  }
+
+  @Post()
+  async create(@Body() dto: CreateTaskDto, @Req() req) {
     return this.tasksService.create(dto, req.user.userId);
   }
 
